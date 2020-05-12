@@ -4,7 +4,7 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, unix_timestamp}
 
-object filterexample extends App{
+object crimedata extends App{
 
   private val session = SparkSession.builder()
     .master("local[1]")
