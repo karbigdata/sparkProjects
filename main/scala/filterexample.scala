@@ -39,8 +39,16 @@ object crimedata extends App{
   //first get the required col data
   // YYYY-MM-DD HH:mm:ss
   val requiredCols = crimeDF.select(col="Date", cols="Primary Type")
-  //requiredCols.show(3)
-
+  requiredCols.show(3)
+  /*
+  +--------------------+--------------------+
+|                Date|        Primary Type|
++--------------------+--------------------+
+|05/03/2016 11:40:...|             BATTERY|
+|05/03/2016 09:40:...|             BATTERY|
+|05/03/2016 11:31:...|PUBLIC PEACE VIOL...|
++--------------------+--------------------+
+*/
   val requiredColsFormatted = requiredCols
     .withColumn("Date", unix_timestamp(col("Date"), "MM/dd/yyyy HH:mm:ss")
     .cast("timestamp"))
@@ -51,7 +59,16 @@ object crimedata extends App{
 
   requiredColsFormattedMonth.show(3)
   requiredColsFormatted.printSchema()
-
+/*  
+  +-------------------+--------------------+-------+
+|               Date|        Primary_Type|  Month|
++-------------------+--------------------+-------+
+|2016-05-03 11:40:00|             BATTERY|2016-05|
+|2016-05-03 09:40:00|             BATTERY|2016-05|
+|2016-05-03 11:31:00|PUBLIC PEACE VIOL...|2016-05|
++-------------------+--------------------+-------+
+*/
+  
   //Now spark sql to query the data
   requiredColsFormattedMonth.createOrReplaceTempView("crimedata")
 
@@ -59,6 +76,29 @@ object crimedata extends App{
                       "group by Month, Primary_Type order by Month, monthlyCrimeCount desc")
   monthlyCrimeCount.show(50)
 
+  /*
+  
++-------+--------------------+-----------------+
+|  Month|        Primary_Type|monthlyCrimeCount|
++-------+--------------------+-----------------+
+|2012-01|               THEFT|             5711|
+|2012-01|             BATTERY|             4307|
+|2012-01|           NARCOTICS|             3271|
+|2012-01|     CRIMINAL DAMAGE|             2660|
+|2012-01|            BURGLARY|             1757|
+|2012-01|       OTHER OFFENSE|             1537|
+|2012-01| MOTOR VEHICLE THEFT|             1440|
+|2012-01|             ASSAULT|             1294|
+|2012-01|  DECEPTIVE PRACTICE|             1093|
+|2012-01|             ROBBERY|             1011|
+|2012-01|   CRIMINAL TRESPASS|              662|
+|2012-01|   WEAPONS VIOLATION|              317|
+|2012-01|OFFENSE INVOLVING...|              227|
+|2012-01|        PROSTITUTION|              194|
++-------+--------------------+-----------------+
+only showing top 50 rows
+*/
+  
   //save the final DF to a file
   monthlyCrimeCount.write
     .option("sep", "|")
